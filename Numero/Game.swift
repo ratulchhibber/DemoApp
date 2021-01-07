@@ -39,7 +39,7 @@ class Game {
   var isCorrectConversion: [Bool]
   
   var converter: Converter
-  //This is a test comment - Updated
+  //This is a test comment - Updated new
   init() {
     score = 0
     attempt = 0
