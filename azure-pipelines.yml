@@ -1,19 +1,75 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-trigger:
-- main
-
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Azure Pipelines
+  demands: xcode
+
+#Your build pipeline references a secret variable named ‘P12password’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it secret. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references the ‘TestConfiguration’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+#Your build pipeline references the ‘TestSDK’ variable, which you’ve selected to be settable at queue time. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab, and then select the option to make it settable at queue time. See https://go.microsoft.com/fwlink/?linkid=865971
+#Your build pipeline references an undefined variable named ‘Parameters.xcWorkspacePath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Parameters.scheme’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Parameters.xcodeVersion’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Parameters.xcWorkspacePath’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Parameters.scheme’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘Parameters.xcodeVersion’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: InstallAppleCertificate@2
+  displayName: 'Install an Apple certificate'
+  inputs:
+    certPwd: '$(P12password)'
+  enabled: false
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: InstallAppleProvisioningProfile@1
+  displayName: 'Install an Apple provisioning profile'
+  enabled: false
+
+- task: Xcode@5
+  displayName: 'Xcode test'
+  inputs:
+    actions: test
+    configuration: '$(TestConfiguration)'
+    sdk: '$(TestSDK)'
+    xcWorkspacePath: '$(Parameters.xcWorkspacePath)'
+    scheme: '$(Parameters.scheme)'
+    xcodeVersion: '$(Parameters.xcodeVersion)'
+    signingOption: default
+    destinationPlatformOption: iOS
+    publishJUnitResults: true
+  enabled: false
+
+- task: Xcode@5
+  displayName: 'Xcode build'
+  inputs:
+    xcWorkspacePath: '$(Parameters.xcWorkspacePath)'
+    scheme: '$(Parameters.scheme)'
+    xcodeVersion: '$(Parameters.xcodeVersion)'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(system.defaultworkingdirectory)'
+    Contents: '**/*.ipa'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
+
+- task: AppCenterTest@1
+  displayName: 'Test with Visual Studio App Center'
+  inputs:
+    appFile: '**/*.ipa'
+  enabled: false
+  condition: succeededOrFailed()
+
+- task: AppCenterDistribute@2
+  displayName: 'Deploy **/*.ipa to Visual Studio App Center'
+  inputs:
+    appFile: '**/*.ipa'
+    symbolsIncludeParentDirectory: false
+  enabled: false
+  condition: succeededOrFailed()
+
