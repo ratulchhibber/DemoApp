@@ -21,6 +21,16 @@ or alternatively using `brew install fastlane`
 fastlane ios tests
 ```
 This lane triggers the test suite
+### ios codecoverage
+```
+fastlane ios codecoverage
+```
+Slather
+### ios testReport
+```
+fastlane ios testReport
+```
+Test and report coverage
 
 ----
 

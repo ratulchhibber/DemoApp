@@ -4,5 +4,16 @@ platform :ios do
   desc "This lane triggers the test suite"
       lane :tests do
       run_tests(scheme: "Numero")
+
+      lane :codecoverage do
+        slather(
+          output_directory: "fastlane/test_output/slather",
+          scheme: "Numero",
+          proj: "Numero.xcodeproj",
+          verbose: true,
+          cobertura_xml: true
+      )
+
   end
+
 end
