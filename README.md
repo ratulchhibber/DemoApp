@@ -1,2 +1,2 @@
 # DemoApp
-This is a sample App for test the Azure devops pipeline
+This is a sample App for testing the Azure devops pipeline
